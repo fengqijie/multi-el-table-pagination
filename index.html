@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <!-- import CSS -->
+  <link rel="stylesheet" href="./assets/index.css">
+</head>
+
+<body>
+  <div id="app">
+    <el-button @click="visible = true">显示 table</el-button>
+    <el-dialog :visible.sync="visible" title="Hello world">
+      <el-button @click="changeTable">change table</el-button>
+      <el-table ref="multipleTable" :data="tableData" tooltip-effect="dark" style="width: 100%"
+        @select="onSelect">
+        <el-table-column type="selection" width="55">
+        </el-table-column>
+        <el-table-column prop="id" label="登录账户"></el-table-column>
+        <el-table-column prop="name" label="名称"></el-table-column>
+        <el-table-column prop="typeText" label="类型"></el-table-column>
+        <el-table-column prop="createTime" label="创建时间"></el-table-column>
+      </el-table>
+    </el-dialog>
+  </div>
+</body>
+<script src="./assets/vue.js"></script>
+<script src="./assets/index.js"></script>
+<script src="./data.js"></script>
+<script>
+  new Vue({
+    el: '#app',
+    data: function () {
+      return {
+        visible: false,
+        tableData: [],
+        selectionSet: new Set()
+      }
+    },
+    props: {
+      selectedList: {
+        type: Array,
+        default() {
+          return ['esop', 'csldl', 'xx2-csldl']
+        }
+      }
+    },
+    created() {
+      this.getTableList()
+      this.selectedList.forEach(i => {
+        this.addSelection(i)
+      })
+    },
+    watch: {
+      visible (val) {
+        val && this.setTableSelection()
+      }
+    },
+    methods: {
+      changeTable () {
+        this.tableData = this.tableData === tableData ? tableData2 : tableData
+        this.setTableSelection()
+      },
+
+      getTableList() {
+        // tableData 来自 data.js
+        this.tableData = tableData
+        this.setTableSelection()
+      },
+
+      addSelection (value) {
+        this.selectionSet.add(value)
+      },
+
+      removeSelection (value) {
+        this.selectionSet.delete(value)
+      },
+
+      onSelect(selection, row) {
+        // 区分是选中 or 取消选中
+        if (selection.includes(row)) {
+          this.addSelection(row.id)
+        } else {
+          this.removeSelection(row.id)
+        }
+      },
+
+      setTableSelection() {
+        // 每次 table 渲染后都调用一次
+        if (!this.visible) return;
+        this.$nextTick(() => {
+          const ret = [...this.selectionSet]
+          ret.forEach(id => {
+            const item = this.tableData.find(i => i.id === id)
+            if (item) {
+              this.$refs.multipleTable.toggleRowSelection(item, true);
+            }
+          });
+        })
+      },
+
+    }
+  })
+</script>
+
+</html>
